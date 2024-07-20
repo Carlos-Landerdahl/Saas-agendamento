@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.chakra-modal__content-container {
+  padding: 10px;
+}
+
+.react-calendar {
+  width: 100%;
+  background-color: #2d3748;
+  color: white;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.react-calendar__tile {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 8px;
+  margin: 2px;
+  gap: 5px;
+}
+
+.react-calendar__navigation__label:hover, 
+.react-calendar__navigation__arrow:hover,
+.react-calendar__navigation__next-button:hover {
+ background-color: #2d3748 !important;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #4a5568;
+}
+
+.react-calendar__tile--now {
+  background: #3182ce;
+  color: white;
+  font-weight: bold;
+}
+
+.react-calendar__tile--active {
+  background: #2b6cb0;
+  color: white;
+}
+
+.react-calendar__tile--hasActive {
+  background: #2b6cb0;
+}
+
+.highlight {
+  background: #E3CB6F !important;
+  color: black;
+}
+
+/* Estilização da barra de rolagem */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d3748;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2b6cb0;
+}
