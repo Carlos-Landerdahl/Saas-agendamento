@@ -31,21 +31,13 @@ public class HorarioController {
     @GetMapping("/{id}")
     public ResponseEntity<HorarioEntity> buscarHorarioPorId(@PathVariable Long id) {
         HorarioEntity horario = horarioService.buscarHorarioPorId(id);
-        if (horario != null) {
-            return ResponseEntity.ok(horario);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(horario);
     }
 
     @PostMapping
     public ResponseEntity<HorarioEntity> salvarHorario(@RequestBody HorarioEntity horario) {
-        try {
-            HorarioEntity horarioSalvo = horarioService.salvarHorario(horario);
-            return ResponseEntity.status(HttpStatus.CREATED).body(horarioSalvo);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        }
+        HorarioEntity horarioSalvo = horarioService.salvarHorario(horario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(horarioSalvo);
     }
 
     @DeleteMapping("/{id}")
@@ -53,7 +45,7 @@ public class HorarioController {
         horarioService.deletarHorario(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/rentals")
     public ResponseEntity<List<HorarioService.RentalData>> getRentals(
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

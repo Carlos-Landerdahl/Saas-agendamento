@@ -2,6 +2,8 @@ package com.rondom.quadras.services;
 
 import com.rondom.quadras.entities.HorarioEntity;
 import com.rondom.quadras.repository.HorarioRepository;
+import com.rondom.quadras.exceptions.ConflictException;
+import com.rondom.quadras.exceptions.ResourceNotFoundException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,17 +30,20 @@ public class HorarioService {
     }
 
     public HorarioEntity buscarHorarioPorId(Long id) {
-        return horarioRepository.findById(id).orElse(null);
+        return horarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Horário não encontrado com o ID: " + id));
     }
 
     public HorarioEntity salvarHorario(HorarioEntity horario) {
         if (conflitoDeHorario(horario)) {
-            throw new IllegalArgumentException("Já existe um horário marcado para essa quadra e horário.");
+            throw new ConflictException("Já existe um horário marcado para essa quadra e horário.");
         }
         return horarioRepository.save(horario);
     }
 
     public void deletarHorario(Long id) {
+        if (!horarioRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Horário não encontrado com o ID: " + id);
+        }
         horarioRepository.deleteById(id);
     }
 
@@ -90,6 +95,5 @@ public class HorarioService {
             this.date = date.toString();
             this.count = count;
         }
-
     }
 }
