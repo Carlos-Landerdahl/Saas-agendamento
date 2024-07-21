@@ -2,7 +2,6 @@
 
 import { ChakraProvider } from '@chakra-ui/react';
 import Calendar from '../components/Calendar';
-import ScheduleForm from '../components/ScheduleForm';
 import { useState } from 'react';
 import theme from '@/styles/theme';
 import RentalChart from '@/components/RentalChart';
@@ -20,7 +19,6 @@ export default function Home() {
         <h1 className="text-4xl font-bold mb-8 text-center">Agendamento de quadras</h1>
         <div className="w-full max-w-4xl flex flex-col gap-4">
           <Calendar onSchedule={handleSchedule} />
-          <ScheduleForm onSchedule={handleSchedule} />
         </div>
         <div className='w-full mt-7'>
           <RentalChart refresh={refresh} />

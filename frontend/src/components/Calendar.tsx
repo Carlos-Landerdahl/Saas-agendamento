@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar as ReactCalendar } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { Modal, Button, Text, Box, Grid, GridItem, ModalBody, ModalFooter, ModalContent, ModalHeader, ModalOverlay, IconButton } from '@chakra-ui/react';
-import '../styles/globals.css';
+import { Box, Grid, GridItem, Text, IconButton } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
 import ScheduleForm from './ScheduleForm';
+import { fetchHorarios, fetchQuadras, deleteHorario } from '../services/api';
+import '../styles/globals.css';
+import { GrSchedules } from 'react-icons/gr';
 
 interface Horario {
   id: number;
@@ -25,25 +27,23 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [quadras, setQuadras] = useState<Quadra[]>([]);
   const [isClient, setIsClient] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [visible, setVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     setIsClient(true);
-    fetchHorarios();
+    fetchHorariosData();
   }, []);
 
   useEffect(() => {
-    if (visible && selectedDate) {
-      fetchQuadras(selectedDate);
+    if (selectedDate) {
+      fetchQuadrasData(selectedDate);
     }
-  }, [refresh, visible]);
+  }, [refresh, selectedDate]);
 
-  const fetchHorarios = async () => {
+  const fetchHorariosData = async () => {
     try {
-      const response = await fetch('http://localhost:8080/horarios');
-      const data = await response.json();
+      const data = await fetchHorarios();
       if (Array.isArray(data)) {
         setHorarios(data);
       } else {
@@ -54,34 +54,33 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
     }
   };
 
-  const fetchQuadras = async (date: Date) => {
+  const fetchQuadrasData = async (date: Date) => {
     try {
-      const response = await fetch(`http://localhost:8080/quadras/horarios?data=${date.toISOString()}`);
-      const data = await response.json();
-      console.log(data);
+      const data = await fetchQuadras(date.toISOString());
       setQuadras(data);
-      setVisible(true);
     } catch (error) {
       console.error('Error fetching quadras:', error);
     }
   };
 
-  const deleteHorario = async (horarioId: number) => {
-    console.log(horarioId);
-
+  const deleteHorarioHandler = async (horarioId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/horarios/${horarioId}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setRefresh(refresh + 1);
-        fetchHorarios();
-        onSchedule();
-      } else {
-        console.error('Failed to delete horario');
-      }
+      await deleteHorario(horarioId);
+      setRefresh(refresh + 1);
+      fetchHorariosData();
+      onSchedule();
     } catch (error) {
       console.error('Error deleting horario:', error);
+    }
+  };
+
+  const addHorarioHandler = async () => {
+    try {
+      fetchHorariosData();
+      fetchQuadrasData(selectedDate);
+      onSchedule();
+    } catch (error) {
+      console.error('Error adding horario:', error);
     }
   };
 
@@ -118,12 +117,7 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    fetchQuadras(date);
-  };
-
-  const closeHandler = () => {
-    setVisible(false);
-    setQuadras([]);
+    fetchQuadrasData(date);
   };
 
   const handleSchedule = () => {
@@ -131,68 +125,71 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
     onSchedule();
   };
 
+  const noHorarios = quadras.every(quadra => quadra.horarios.length === 0);
+
   if (!isClient) {
     return null; // Renderiza nada no lado do servidor
   }
 
   return (
-    <Box p={1} bg="gray.600" color="black" borderRadius="lg" shadow="xs">
+    <><Box p={1} bg="gray.800" color="black" borderRadius="lg" shadow="xs">
       <ReactCalendar
         tileContent={tileContent}
         tileClassName={tileClassName}
         onClickDay={handleDateClick}
-        className="w-full border-none calendar-custom"
-      />
-      <Modal isOpen={visible} onClose={closeHandler}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            <Text fontSize="lg" fontWeight="bold">
-              Horários de {selectedDate && selectedDate.toLocaleDateString()}
-            </Text>
-          </ModalHeader>
-          <ModalBody maxHeight="400px" overflowY="auto">
-            {quadras.map((quadra) => (
-              <Box key={quadra.quadraId} mb={4}>
-                <Text fontSize="md" fontWeight="semibold" mb={2}>{quadra.nome}</Text>
+        className="w-full border-none calendar-custom" />
+      <Box
+        mt={4}
+        p={4}
+        borderRadius="md"
+        height="320px"
+        overflowY="auto"
+      >
+        <Text fontSize="xl" color="white" fontWeight="bold" mb={4} align="center">
+          Horários de {selectedDate.toLocaleDateString()}
+        </Text>
+        {noHorarios ? (
+          <Text className='flex items-center gap-2 justify-center mt-10 font-bold text-yellow-400'>Nenhum horário marcado<GrSchedules /></Text>
+        ) : (
+          quadras.map((quadra) => (
+            <Box key={quadra.quadraId} mb={4}>
+              <Text fontSize="md" color="white" fontWeight="semibold" mb={2}>{quadra.nome}</Text>
+              {quadra.horarios.length === 0 ? (
+                <Text className='flex items-center gap-2 font-bold text-yellow-400'>Nenhum horário marcado</Text>
+              ) : (
                 <Grid templateColumns="repeat(1, 1fr)" gap={2}>
-                  {quadra.horarios.map((horario, index: number) => (
+                  {quadra.horarios.map((horario) => (
                     <GridItem
-                      className='text-center font-bold flex items-center justify-between'
+                      className="text-center font-bold flex items-center justify-between"
                       key={horario.id}
                       p={2}
                       borderRadius="md"
                       bg="#3c495f"
+                      color="gray.100"
+                      display="flex"
+                      justifyContent="space-between"
                     >
                       <span>
                         {new Date(horario.inicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
-                        {new Date(horario.fim).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(horario.fim).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {'| Name | Email'}
                       </span>
                       <IconButton
                         aria-label="Delete"
                         icon={<FaTrash />}
                         size="sm"
-                        // colorScheme="red"
                         color="red.400"
                         bg="transparent"
-                        onClick={() => deleteHorario(horario.id)}
-                      />
+                        onClick={() => deleteHorarioHandler(horario.id)} />
                     </GridItem>
                   ))}
                 </Grid>
-              </Box>
-            ))}
-          </ModalBody>
-          <ModalFooter>
-            <div className='flex justify-between w-full items-center py-2'>
-              <ScheduleForm onSchedule={handleSchedule} />
-              <Button colorScheme="red" onClick={closeHandler}>
-                Fechar
-              </Button>
-            </div>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              )}
+            </Box>
+          ))
+        )}
+      </Box>
     </Box>
+    <ScheduleForm onSchedule={addHorarioHandler} quadras={quadras} />
+    </>
   );
 }

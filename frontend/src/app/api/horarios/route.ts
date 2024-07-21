@@ -4,7 +4,6 @@ export async function GET() {
   try {
     const response = await fetch('http://localhost:8080/horarios');
     const data = await response.json();
-    // Verifica se data é um array antes de retornar
     if (Array.isArray(data)) {
       return NextResponse.json(data);
     } else {

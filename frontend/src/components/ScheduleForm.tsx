@@ -13,18 +13,26 @@ import {
   FormControl,
   FormLabel,
   Text,
+  Select,
 } from '@chakra-ui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import { AiOutlineSchedule } from 'react-icons/ai';
 import { GrFormSchedule } from 'react-icons/gr';
+import { postHorario } from '../services/api';
+
+interface Quadra {
+  quadraId: number;
+  nome: string;
+}
 
 interface ScheduleFormProps {
   onSchedule: () => void;
+  quadras: Quadra[];
 }
 
-export default function ScheduleForm({ onSchedule }: ScheduleFormProps) {
+export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps) {
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [quadraId, setQuadraId] = useState<string>('');
@@ -44,25 +52,14 @@ export default function ScheduleForm({ onSchedule }: ScheduleFormProps) {
     const formattedEndDate = format(endDate, "yyyy-MM-dd'T'HH:mm:ss");
 
     try {
-      const response = await fetch('http://localhost:8080/horarios', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          quadra: { id: parseInt(quadraId) },
-          inicioReserva: formattedStartDate,
-          fimReserva: formattedEndDate,
-        }),
+      await postHorario({
+        quadra: { id: parseInt(quadraId) },
+        inicioReserva: formattedStartDate,
+        fimReserva: formattedEndDate,
       });
-
-      if (response.ok) {
-        onSchedule();
-        onClose();
-      } else {
-        setError('Erro ao agendar horário');
-      }
-    } catch (err) {
+      onSchedule();
+      onClose();
+    } catch {
       setError('Erro ao agendar horário');
     }
   };
@@ -79,11 +76,18 @@ export default function ScheduleForm({ onSchedule }: ScheduleFormProps) {
           <ModalBody>
             <form onSubmit={handleSubmit} className="space-y-4">
               <FormControl isRequired>
-                <FormLabel>ID da Quadra</FormLabel>
-                <Input
+                <FormLabel>Quadra</FormLabel>
+                <Select
+                  placeholder="Selecione a quadra"
                   value={quadraId}
                   onChange={(e) => setQuadraId(e.target.value)}
-                />
+                >
+                  {quadras.map((quadra) => (
+                    <option key={quadra.quadraId} value={quadra.quadraId}>
+                      {quadra.nome}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
               <FormControl isRequired>
                 <FormLabel>Início da Reserva</FormLabel>

@@ -4,6 +4,7 @@ import 'chart.js/auto';
 import { format, parseISO } from 'date-fns';
 import { Box, Heading, useColorModeValue, Flex, Input, Button } from '@chakra-ui/react';
 import { TbCalendarSearch } from 'react-icons/tb';
+import { fetchRentalData } from '../services/api';
 
 interface RentalData {
   date: string;
@@ -14,26 +15,26 @@ export default function RentalChart({ refresh }: { refresh: number }) {
   const [rentalData, setRentalData] = useState<RentalData[]>([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  
   const chartBackgroundColor = useColorModeValue('rgba(75, 192, 192, 0.6)', 'rgba(75, 192, 192, 0.2)');
   const chartBorderColor = useColorModeValue('rgba(75, 192, 192, 1)', 'rgba(75, 192, 192, 0.8)');
   const fontColor = useColorModeValue('rgba(0, 0, 0, 0.87)', 'rgba(255, 255, 255, 0.87)');
 
   useEffect(() => {
-    fetchRentalData();
+    fetchRentalDataWrapper();
   }, [refresh]);
 
-  async function fetchRentalData() {
+  const fetchRentalDataWrapper = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/horarios/rentals?startDate=${startDate}&endDate=${endDate}`);
-      const data = await response.json();
+      const data = await fetchRentalData(startDate, endDate);
       setRentalData(data);
     } catch (error) {
       console.error('Error fetching rental data:', error);
     }
-  }
+  };
 
   const handleFilter = () => {
-    fetchRentalData();
+    fetchRentalDataWrapper();
   };
 
   const totalEarnings = rentalData.reduce((total, data) => total + data.count * 80, 0);
