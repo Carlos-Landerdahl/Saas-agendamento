@@ -18,6 +18,7 @@ import {
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { AiOutlineSchedule } from 'react-icons/ai';
 import { GrFormSchedule } from 'react-icons/gr';
 import { postHorario } from '../services/api';
@@ -97,6 +98,8 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
                   showTimeSelect
                   dateFormat="Pp"
                   customInput={<Input />}
+                  locale={ptBR}
+                  minDate={new Date()}
                 />
               </FormControl>
               <FormControl isRequired>
@@ -107,6 +110,8 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
                   showTimeSelect
                   dateFormat="Pp"
                   customInput={<Input />}
+                  locale={ptBR}
+                  minDate={startDate || new Date()}
                 />
               </FormControl>
               <div className='flex gap-2 pb-2'>

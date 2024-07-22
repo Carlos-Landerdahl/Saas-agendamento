@@ -9,6 +9,8 @@ import ScheduleForm from './ScheduleForm';
 import { fetchHorarios, fetchQuadras, deleteHorario } from '../services/api';
 import '../styles/globals.css';
 import { GrSchedules } from 'react-icons/gr';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Horario {
   id: number;
@@ -63,9 +65,17 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
     }
   };
 
-  const deleteHorarioHandler = async (horarioId: number) => {
+  const deleteHorarioHandler = async (horario: Horario) => {
+    const today = new Date();
+    const horarioDate = new Date(horario.inicio);
+
+    if (horarioDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+      alert('Não é possível excluir agendamentos de dias anteriores.');
+      return;
+    }
+
     try {
-      await deleteHorario(horarioId);
+      await deleteHorario(horario.id);
       setRefresh(refresh + 1);
       fetchHorariosData();
       onSchedule();
@@ -106,7 +116,12 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
   };
 
   const tileClassName = ({ date, view }: { date: Date; view: string }) => {
-    if (view === 'month' && Array.isArray(horarios)) {
+    if (view === 'month') {
+      const today = new Date();
+      if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        return 'opacity-50'; // Deixar datas passadas opacas
+      }
+
       const count = horarios.filter(
         (h) => new Date(h.inicio).toDateString() === date.toDateString()
       ).length;
@@ -137,7 +152,8 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
         tileContent={tileContent}
         tileClassName={tileClassName}
         onClickDay={handleDateClick}
-        className="w-full border-none calendar-custom" />
+        className="w-full border-none calendar-custom"
+        locale="pt-BR" />
       <Box
         mt={4}
         p={4}
@@ -146,16 +162,16 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
         overflowY="auto"
       >
         <Text fontSize="xl" color="white" fontWeight="bold" mb={4} align="center">
-          Horários de {selectedDate.toLocaleDateString()}
+          Horários de {format(selectedDate, 'dd/MM/yyyy', { locale: ptBR })}
         </Text>
         {noHorarios ? (
-          <Text className='flex items-center gap-2 justify-center mt-10 font-bold text-yellow-400'>Nenhum horário marcado<GrSchedules /></Text>
+          <Text className='flex items-center gap-2 justify-center mt-10 font-bold text-yellow-400'>Nenhum horário marcado para esta data <GrSchedules /></Text>
         ) : (
           quadras.map((quadra) => (
             <Box key={quadra.quadraId} mb={4}>
               <Text fontSize="md" color="white" fontWeight="semibold" mb={2}>{quadra.nome}</Text>
               {quadra.horarios.length === 0 ? (
-                <Text className='flex items-center gap-2 font-bold text-yellow-400'>Nenhum horário marcado</Text>
+                <Text className='flex items-center gap-2 font-bold text-yellow-400'>Nenhum horário marcado para esta quadra</Text>
               ) : (
                 <Grid templateColumns="repeat(1, 1fr)" gap={2}>
                   {quadra.horarios.map((horario) => (
@@ -171,7 +187,7 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
                     >
                       <span>
                         {new Date(horario.inicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
-                        {new Date(horario.fim).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {'| Name | Email'}
+                        {new Date(horario.fim).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <IconButton
                         aria-label="Delete"
@@ -179,7 +195,7 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
                         size="sm"
                         color="red.400"
                         bg="transparent"
-                        onClick={() => deleteHorarioHandler(horario.id)} />
+                        onClick={() => deleteHorarioHandler(horario)} />
                     </GridItem>
                   ))}
                 </Grid>
