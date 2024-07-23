@@ -75,7 +75,7 @@ public class HorarioService {
         if (startDate != null && endDate != null) {
             horarios = horarios.stream()
                     .filter(h -> !h.getInicioReserva().toLocalDate().isBefore(startDate) && !h.getInicioReserva().toLocalDate().isAfter(endDate))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return horarios.stream()

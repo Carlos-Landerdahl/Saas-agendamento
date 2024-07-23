@@ -5,13 +5,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Data
-
 @Table(name = "TB_HORARIOS")
 public class HorarioEntity {
 
@@ -29,6 +25,9 @@ public class HorarioEntity {
     }
 
     private LocalDateTime inicioReserva;
-
     private LocalDateTime fimReserva;
+    private String nome;
+    private String email;
+    private String tel;
+    private String tipoEsporte;
 }
