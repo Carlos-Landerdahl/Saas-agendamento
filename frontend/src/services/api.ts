@@ -1,3 +1,5 @@
+// services/api.ts
+
 const API_BASE_URL = 'http://localhost:8080';
 
 export const fetchHorarios = async () => {
@@ -39,6 +41,14 @@ export const postHorario = async (horario: any) => {
   return response.json();
 };
 
+export const fetchHorarioById = async (horarioId: number) => {
+  const response = await fetch(`${API_BASE_URL}/horarios/${horarioId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch horario by ID');
+  }
+  return response.json();
+};
+
 export const fetchRentalData = async (startDate: string, endDate: string) => {
   const response = await fetch(`${API_BASE_URL}/horarios/rentals?startDate=${startDate}&endDate=${endDate}`);
   if (!response.ok) {
@@ -46,4 +56,3 @@ export const fetchRentalData = async (startDate: string, endDate: string) => {
   }
   return response.json();
 };
-

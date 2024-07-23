@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { Box, Heading, useColorModeValue, Flex, Input, Button } from '@chakra-ui/react';
 import { TbCalendarSearch } from 'react-icons/tb';
 import { fetchRentalData } from '../services/api';
+import { ptBR } from 'date-fns/locale';
 
 interface RentalData {
   date: string;
@@ -40,7 +41,7 @@ export default function RentalChart({ refresh }: { refresh: number }) {
   const totalEarnings = rentalData.reduce((total, data) => total + data.count * 80, 0);
 
   const chartData = {
-    labels: rentalData.map(data => format(parseISO(data.date), 'dd/MM/yyyy')),
+    labels: rentalData.map(data => format(parseISO(data.date), 'dd/MM/yyyy', { locale: ptBR })),
     datasets: [
       {
         label: 'Número de Aluguéis',

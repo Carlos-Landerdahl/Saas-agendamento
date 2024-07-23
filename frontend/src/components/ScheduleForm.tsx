@@ -9,6 +9,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  ModalFooter,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -36,7 +37,13 @@ interface ScheduleFormProps {
 export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps) {
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
+  const [startTime, setStartTime] = useState<string>('09:00');
+  const [endTime, setEndTime] = useState<string>('10:00');
   const [quadraId, setQuadraId] = useState<string>('');
+  const [nome, setNome] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [tel, setTel] = useState<string>('');
+  const [tipoEsporte, setTipoEsporte] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -49,14 +56,20 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
       return;
     }
 
-    const formattedStartDate = format(startDate, "yyyy-MM-dd'T'HH:mm:ss");
-    const formattedEndDate = format(endDate, "yyyy-MM-dd'T'HH:mm:ss");
+    const formattedStartDate = format(startDate, "yyyy-MM-dd");
+    const formattedStartTime = `${formattedStartDate}T${startTime}:00`;
+    const formattedEndDate = format(endDate, "yyyy-MM-dd");
+    const formattedEndTime = `${formattedEndDate}T${endTime}:00`;
 
     try {
       await postHorario({
         quadra: { id: parseInt(quadraId) },
-        inicioReserva: formattedStartDate,
-        fimReserva: formattedEndDate,
+        inicioReserva: formattedStartTime,
+        fimReserva: formattedEndTime,
+        nome,
+        email,
+        tel,
+        tipoEsporte,
       });
       onSchedule();
       onClose();
@@ -70,18 +83,62 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
       <Button colorScheme="blue" onClick={onOpen} className='flex gap-1 items-center'>
         Agendar Horário <GrFormSchedule size={25}/>
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent maxW="450px" maxH="90vh" overflowY="auto">
           <ModalHeader>Agendar Horário</ModalHeader>
           <ModalBody>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <FormControl isRequired>
+                <FormLabel>Data de Início</FormLabel>
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  dateFormat="P"
+                  customInput={<Input width="100%" />}
+                  locale={ptBR}
+                  minDate={new Date()}
+                  className="w-full"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Data de Fim</FormLabel>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  dateFormat="P"
+                  customInput={<Input width="100%" />}
+                  locale={ptBR}
+                  minDate={startDate || new Date()}
+                  className="w-full"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Hora de Início</FormLabel>
+                <Input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  width="100%"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Hora de Fim</FormLabel>
+                <Input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  min={startTime}
+                  width="100%"
+                />
+              </FormControl>
               <FormControl isRequired>
                 <FormLabel>Quadra</FormLabel>
                 <Select
                   placeholder="Selecione a quadra"
                   value={quadraId}
                   onChange={(e) => setQuadraId(e.target.value)}
+                  width="100%"
                 >
                   {quadras.map((quadra) => (
                     <option key={quadra.quadraId} value={quadra.quadraId}>
@@ -91,27 +148,43 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
                 </Select>
               </FormControl>
               <FormControl isRequired>
-                <FormLabel>Início da Reserva</FormLabel>
-                <DatePicker
-                  selected={startDate}
-                  onChange={(date) => setStartDate(date)}
-                  showTimeSelect
-                  dateFormat="Pp"
-                  customInput={<Input />}
-                  locale={ptBR}
-                  minDate={new Date()}
+                <FormLabel>Tipo de Esporte</FormLabel>
+                <Select
+                  placeholder="Selecione o tipo de esporte"
+                  value={tipoEsporte}
+                  onChange={(e) => setTipoEsporte(e.target.value)}
+                  width="100%"
+                >
+                  <option value="Futevôlei">Futevôlei</option>
+                  <option value="Vôlei">Vôlei</option>
+                  <option value="Beach Tennis">Beach Tennis</option>
+                </Select>
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Nome</FormLabel>
+                <Input
+                  type="text"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  width="100%"
                 />
               </FormControl>
               <FormControl isRequired>
-                <FormLabel>Fim da Reserva</FormLabel>
-                <DatePicker
-                  selected={endDate}
-                  onChange={(date) => setEndDate(date)}
-                  showTimeSelect
-                  dateFormat="Pp"
-                  customInput={<Input />}
-                  locale={ptBR}
-                  minDate={startDate || new Date()}
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  width="100%"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Telefone</FormLabel>
+                <Input
+                  type="tel"
+                  value={tel}
+                  onChange={(e) => setTel(e.target.value)}
+                  width="100%"
                 />
               </FormControl>
               <div className='flex gap-2 pb-2'>
