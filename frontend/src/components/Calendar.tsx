@@ -3,7 +3,22 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar as ReactCalendar } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { Box, Grid, GridItem, Text, IconButton, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react';
+import { 
+  Box, 
+  Grid, 
+  GridItem, 
+  Text, 
+  IconButton, 
+  Button, 
+  Modal, 
+  ModalOverlay, 
+  ModalContent, 
+  ModalHeader, 
+  ModalFooter, 
+  ModalBody, 
+  ModalCloseButton, 
+  useToast 
+} from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
 import ScheduleForm from './ScheduleForm';
 import { fetchHorarios, fetchQuadras, deleteHorario, fetchHorarioById } from '../services/api';
@@ -39,6 +54,7 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [refresh, setRefresh] = useState(0);
   const [selectedHorario, setSelectedHorario] = useState<Horario | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -87,7 +103,18 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
     const horarioDate = new Date(horario.inicio);
 
     if (horarioDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
-      alert('Não é possível excluir agendamentos de dias anteriores.');
+      toast({
+        position: 'top-right',
+        title: 'Erro',
+        description: 'Não é possível excluir agendamentos de dias anteriores.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir este horário?')) {
       return;
     }
 
@@ -97,7 +124,23 @@ export default function Calendar({ onSchedule }: { onSchedule: () => void }) {
       fetchHorariosData();
       onSchedule();
       closeModal();
+      toast({
+        position: 'top-right',
+        title: 'Horário Excluído',
+        description: 'O horário foi excluído com sucesso.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (error) {
+      toast({
+        position: 'top-right',
+        title: 'Erro',
+        description: 'Erro ao excluir horário.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
       console.error('Error deleting horario:', error);
     }
   };

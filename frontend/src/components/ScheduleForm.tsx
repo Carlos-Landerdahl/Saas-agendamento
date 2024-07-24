@@ -9,12 +9,12 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   useDisclosure,
   FormControl,
   FormLabel,
   Text,
   Select,
+  useToast
 } from '@chakra-ui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -47,6 +47,7 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
   const [error, setError] = useState<string>('');
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -61,6 +62,15 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
     const formattedEndDate = format(endDate, "yyyy-MM-dd");
     const formattedEndTime = `${formattedEndDate}T${endTime}:00`;
 
+    toast({
+      position: 'top-right',
+      title: 'Aguarde',
+      description: 'Enviando o agendamento...',
+      status: 'loading',
+      duration: null,
+      isClosable: true,
+    });
+
     try {
       await postHorario({
         quadra: { id: parseInt(quadraId) },
@@ -71,10 +81,27 @@ export default function ScheduleForm({ onSchedule, quadras }: ScheduleFormProps)
         tel,
         tipoEsporte,
       });
+      toast.closeAll();
+      toast({
+        position: 'top-right',
+        title: 'Sucesso',
+        description: 'Horário agendado com sucesso!',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
       onSchedule();
       onClose();
     } catch {
-      setError('Erro ao agendar horário');
+      toast.closeAll();
+      toast({
+        position: 'top-right',
+        title: 'Erro',
+        description: 'Erro ao agendar horário',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
