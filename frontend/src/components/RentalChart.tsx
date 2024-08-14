@@ -4,7 +4,7 @@ import 'chart.js/auto';
 import { format, parseISO } from 'date-fns';
 import { Box, Heading, useColorModeValue, Flex, Input, Button } from '@chakra-ui/react';
 import { TbCalendarSearch } from 'react-icons/tb';
-import { fetchRentalData } from '../services/api';
+import { fetchRentalData } from '@/services/api';
 import { ptBR } from 'date-fns/locale';
 
 interface RentalData {

@@ -1,6 +1,6 @@
 // services/api.ts
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://saas-agendamento-production.up.railway.app';
 
 export const fetchHorarios = async () => {
   const response = await fetch(`${API_BASE_URL}/horarios`);
